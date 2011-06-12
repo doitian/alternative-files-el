@@ -36,14 +36,12 @@
 (defgroup alternative-files nil "Find alternative files")
 
 (defcustom alternative-files-functions
-  '(alternative-files-ffap-finder
-    alternative-files-rails-finder
+  '(alternative-files-rails-finder
     alternative-files-rspec-finder
     alternative-files-objc-finder)
   "functions used to find alternative-files"
   :type 'hook
-  :options '(alternative-files-ffap-finder
-             alternative-files-rails-finder
+  :options '(alternative-files-rails-finder
              alternative-files-rspec-finder
              alternative-files-objc-finder)
   :group 'alternative-files)
@@ -97,9 +95,6 @@
       filename)))
 
 ;;; Code
-
-(defun alternative-files-ffap-finder ()
-  (expand-file-name (ffap-guesser)))
 
 (defun alternative-files-rails-finder (&optional file)
   (let ((file (or file (alternative-files--detect-file-name))))
