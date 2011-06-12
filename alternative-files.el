@@ -31,6 +31,32 @@
 
 ;; TODO
 
+;;; Customizations
+
+(defgroup alternative-files nil "Find alternative files")
+
+(defcustom alternative-files-functions
+  '(alternative-files-ffap-finder
+    alternative-files-rails-finder)
+  "functions used to find alternative-files"
+  :type 'hook
+  :options '(alternative-files-ffap-finder
+             alternative-files-rails-finder)
+  :group 'alternative-files)
+
+(defcustom alternative-files-completing-read
+  'ido-completing-read
+  "function used to read string with completion"
+  :type 'function
+  :options '(ido-completing-read completing-read)
+  :group 'alternative-files)
+
+(defcustom alternative-files-root-dir-function
+  'eproject-root
+  "function used to get root directory"
+  :type 'function
+  :group 'alternative-files)
+
 ;;; Helper Functions:
 
 (eval-when-compile (require 'cl))
@@ -63,32 +89,6 @@
     (if (string-equal dir (substring filename 0 n))
         (substring filename n)
       filename)))
-
-;;; Customizations
-
-(defgroup alternative-files nil "Find alternative files")
-
-(defcustom alternative-files-functions
-  '(alternative-files-ffap-finder
-    alternative-files-rails-finder)
-  "functions used to find alternative-files"
-  :type 'hook
-  :options '(alternative-files-ffap-finder
-             alternative-files-rails-finder)
-  :group 'alternative-files)
-
-(defcustom alternative-files-completing-read
-  'ido-completing-read
-  "function used to read string with completion"
-  :type 'function
-  :options '(ido-completing-read completing-read)
-  :group 'alternative-files)
-
-(defcustom alternative-files-root-dir-function
-  'eproject-root
-  "function used to get root directory"
-  :type 'function
-  :group 'alternative-files)
 
 ;;; Code
 
