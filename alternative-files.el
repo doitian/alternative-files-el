@@ -29,7 +29,7 @@
 
 ;;; Commentary:
 
-;; TODO
+;; See README.md
 
 ;;; Customizations
 
@@ -56,6 +56,8 @@
   "function used to get root directory"
   :type 'function
   :group 'alternative-files)
+(make-variable-buffer-local 'alternative-files-root-dir-function)
+(put 'alternative-files-root-dir-function 'permanent-local t)
 
 ;;; Helper Functions:
 
