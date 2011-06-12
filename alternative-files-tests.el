@@ -215,6 +215,33 @@
   (alternative-files-rspec-finder "/root/spec/foo/bar_spec.rb"))
  )
 
+(expectations
+ (desc "alternative-files-objc-finder")
+
+ (desc "Test.m file")
+ (expect
+  '("/root/Classes/HelloWolrd.m"
+    "/root/Classes/HelloWolrd.h"
+    "/root/Sources/HelloWolrd.m"
+    "/root/Sources/HelloWolrd.h"
+    "/root/Test/HelloWolrd.m"
+    "/root/Test/HelloWolrd.h")
+  (alternative-files-objc-finder "/root/Test/HelloWolrdTest.m"))
+
+ (desc ".h file")
+ (expect
+  '("/root/Sources/HelloWolrd.m"
+    "/root/Sources/HelloWolrdTest.m"
+    "/root/Test/HelloWolrdTest.m")
+  (alternative-files-objc-finder "/root/Sources/HelloWolrd.h"))
+
+ (desc ".m file")
+ (expect
+  '("/root/Sources/HelloWolrd.h"
+    "/root/Sources/HelloWolrdTest.m"
+    "/root/Test/HelloWolrdTest.m")
+  (alternative-files-objc-finder "/root/Sources/HelloWolrd.m"))
+ )
 
 (expectations
  (desc "alternative-files")

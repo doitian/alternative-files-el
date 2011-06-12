@@ -38,12 +38,14 @@
 (defcustom alternative-files-functions
   '(alternative-files-ffap-finder
     alternative-files-rails-finder
-    alternative-files-rspec-finder)
+    alternative-files-rspec-finder
+    alternative-files-objc-finder)
   "functions used to find alternative-files"
   :type 'hook
   :options '(alternative-files-ffap-finder
              alternative-files-rails-finder
-             alternative-files-rspec-finder)
+             alternative-files-rspec-finder
+             alternative-files-objc-finder)
   :group 'alternative-files)
 
 (defcustom alternative-files-completing-read
@@ -184,6 +186,36 @@
 
      )))
 
+(defun alternative-files-objc-finder (&optional file)
+  (let* ((file (or file (alternative-files--detect-file-name))))
+    (cond
+     ((string-match "^\\(.*?/\\)\\([^/]+/\\)?\\([^/]+\\)Test\\.m$" file)
+      (let ((root (match-string 1 file))
+            (dir (match-string 2 file))
+            (name (match-string 3 file)))
+        (list
+         (concat root "Classes/" name ".m")
+         (concat root "Classes/" name ".h")
+         (concat root "Sources/" name ".m")
+         (concat root "Sources/" name ".h")
+         (concat root dir name ".m")
+         (concat root dir name ".h"))))
+     ((string-match "^\\(.*?/\\)\\([^/]+/\\)?\\([^/]+\\)\\.m$" file)
+      (let ((root (match-string 1 file))
+            (dir (match-string 2 file))
+            (name (match-string 3 file)))
+        (list
+         (concat root dir name ".h")
+         (concat root dir name "Test.m")
+         (concat root "Test/" name "Test.m"))))
+     ((string-match "^\\(.*?/\\)\\([^/]+/\\)?\\([^/]+\\)\\.h$" file)
+      (let ((root (match-string 1 file))
+            (dir (match-string 2 file))
+            (name (match-string 3 file)))
+        (list
+         (concat root dir name ".m")
+         (concat root dir name "Test.m")
+         (concat root "Test/" name "Test.m")))))))
 
 (defvar alternative-files nil
   "cache for alternative files")
