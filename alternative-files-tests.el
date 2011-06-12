@@ -181,6 +181,42 @@
  )
 
 (expectations
+ (desc "alternative-files-rspec-finder")
+ 
+ (desc "lib dir")
+ (expect
+  '("/root/spec/lib/foo/bar_spec.rb"
+    "/root/spec/foo/bar_spec.rb")
+  (alternative-files-rspec-finder "/root/lib/foo/bar.rb"))
+
+ (desc "spec/lib")
+ (expect
+  '("/root/lib/foo/bar.rb")
+  (alternative-files-rspec-finder "/root/spec/lib/foo/bar_spec.rb"))
+
+ (desc "spec/models")
+ (expect
+  '("/root/app/models/foo/bar.rb")
+  (alternative-files-rspec-finder "/root/spec/models/foo/bar_spec.rb"))
+
+ (desc "spec/controllers")
+ (expect
+  '("/root/app/controllers/foo/bar_controller.rb")
+  (alternative-files-rspec-finder "/root/spec/controllers/foo/bar_controller_spec.rb"))
+
+ (desc "spec/helpers")
+ (expect
+  '("/root/app/helpers/foo/bar_helper.rb")
+  (alternative-files-rspec-finder "/root/spec/helpers/foo/bar_helper_spec.rb"))
+
+ (desc "other spec sub directory")
+ (expect
+  '("/root/lib/foo/bar.rb")
+  (alternative-files-rspec-finder "/root/spec/foo/bar_spec.rb"))
+ )
+
+
+(expectations
  (desc "alternative-files")
  
  (desc "should call all functions in alternative-files-functions")

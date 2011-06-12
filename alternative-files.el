@@ -37,11 +37,13 @@
 
 (defcustom alternative-files-functions
   '(alternative-files-ffap-finder
-    alternative-files-rails-finder)
+    alternative-files-rails-finder
+    alternative-files-rspec-finder)
   "functions used to find alternative-files"
   :type 'hook
   :options '(alternative-files-ffap-finder
-             alternative-files-rails-finder)
+             alternative-files-rails-finder
+             alternative-files-rspec-finder)
   :group 'alternative-files)
 
 (defcustom alternative-files-completing-read
@@ -145,6 +147,44 @@
          (concat root "/app/helpers/" dir name "_helper.rb"))))
      )))
 
+(defun alternative-files-rspec-finder (&optional file)
+  (let ((file (or file (alternative-files--detect-file-name))))
+    (cond
+     ((string-match "^\\(.*\\)/app/\\(.+\\)\\.rb$" file)
+      (let ((root (match-string 1 file))
+            (name (match-string 2 file)))
+        (list
+         (concat root "/spec/" name "_spec.rb"))))
+
+     ((string-match "^\\(.*\\)/spec/lib/\\(.+\\)_spec.rb$" file)
+      (let ((root (match-string 1 file))
+            (name (match-string 2 file)))
+        (list
+         (concat root "/lib/" name ".rb"))))
+
+     ((string-match "^\\(.*\\)/spec/\\(models\\|controllers\\|helpers\\)/\\(.+\\)_spec.rb$" file)
+      (let ((root (match-string 1 file))
+            (type (match-string 2 file))
+            (name (match-string 3 file)))
+        (list
+         (concat root "/app/" type "/" name ".rb"))))
+
+     ((string-match "^\\(.*\\)/spec/\\(.+\\)_spec.rb$" file)
+      (let ((root (match-string 1 file))
+            (name (match-string 2 file)))
+        (list
+         (concat root "/lib/" name ".rb"))))
+
+     ((string-match "^\\(.*\\)/lib/\\(.+\\)\\.rb$" file)
+      (let ((root (match-string 1 file))
+            (name (match-string 2 file)))
+        (list
+         (concat root "/spec/lib/" name "_spec.rb")
+         (concat root "/spec/" name "_spec.rb"))))
+
+     )))
+
+
 (defvar alternative-files nil
   "cache for alternative files")
 (defvar alternative-files-executed nil
@@ -187,6 +227,7 @@
         (let ((default-directory (or root default-directory)))
           (find-file choice))
       (message "no alternative files"))))
+
 
 ;;;###autoload
 (defun alternative-files-create-file (&optional force)
