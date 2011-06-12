@@ -95,7 +95,7 @@
 ;;; Code
 
 (defun alternative-files-ffap-finder ()
-  (ffap-guesser))
+  (expand-file-name (ffap-guesser)))
 
 (defun alternative-files-rails-finder (&optional file)
   (let ((file (or file (alternative-files--detect-file-name))))
@@ -170,7 +170,6 @@
   "Find alternative files"
   (interactive "P")
   (let* ((root (ignore-errors (funcall alternative-files-root-dir-function)))
-         (default-directory (or root default-directory))
          (files (apply
                  'append
                  (mapcar
@@ -182,22 +181,28 @@
                   (alternative-files force))))
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
-                       files)))
-    (find-file (ido-completing-read "Alternative: " file-names))))
+                       files))
+         (choice (and file-names (ido-completing-read "Alternative: " file-names))))
+    (if choice
+        (let ((default-directory (or root default-directory)))
+          (find-file choice))
+      (message "no alternative files"))))
 
 ;;;###autoload
 (defun alternative-files-create-file (&optional force)
   "Find alternative files"
   (interactive "P")
   (let* ((root (ignore-errors (funcall alternative-files-root-dir-function)))
-         (default-directory (or root default-directory))
-         (files (delete-if-not 'file-exists-p (alternative-files force)))
+         (files (delete-if 'file-exists-p (alternative-files force)))
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
-         (choice (ido-completing-read "Create: " file-names)))
-    (when (equal (file-name-directory choice) choice)
-      (ignore-errors (make-directory choice)))
-    (find-file choice)))
+         (choice (and file-names (ido-completing-read "Create: " file-names))))
+    (if choice
+        (let ((default-directory (or root default-directory)))
+          (when (equal (file-name-directory choice) choice)
+            (ignore-errors (make-directory choice)))
+          (find-file choice))
+      (message "no alternative files to create"))))
 
 (provide 'alternative-files)
