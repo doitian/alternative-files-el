@@ -195,9 +195,9 @@
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
-         (choise (ido-completing-read "Create: " file-names)))
-    (when (equal (file-name-directory choise) choise)
-      (ignore-errors (make-directory choise)))
-    (find-file choise)))
+         (choice (ido-completing-read "Create: " file-names)))
+    (when (equal (file-name-directory choice) choice)
+      (ignore-errors (make-directory choice)))
+    (find-file choice)))
 
 (provide 'alternative-files)
