@@ -272,4 +272,14 @@
   (let ((alternative-files-executed t)
         (alternative-files '("file1" "file2"))
         (alternative-files-functions '(finder1 finder2)))
-    (alternative-files))))
+    (alternative-files)))
+ 
+ (desc "should reload when t is used as argument")
+ (expect
+  '("file1" "file2")
+  (mock (finder) => '("file1" "file2"))
+  (let ((alternative-files-executed t)
+        (alternative-files '("file1"))
+        (alternative-files-functions '(finder)))
+    (alternative-files t)))
+ )

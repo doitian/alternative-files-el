@@ -233,9 +233,10 @@
   alternative-files)
 
 ;;;###autoload
-(defun alternative-files-find-file (&optional force)
-  "Find alternative files"
-  (interactive "P")
+(defun alternative-files-find-file (&optional p)
+  "Find alternative files
+C-u to open in other window, C-u C-u to reload alternative file list"
+  (interactive "p")
   (let* ((root (ignore-errors (funcall alternative-files-root-dir-function)))
          (files (apply
                  'append
@@ -245,23 +246,26 @@
                       (if (file-directory-p f)
                           (file-expand-wildcards (concat f "*") t)
                         (list f))))
-                  (alternative-files force))))
+                  (alternative-files (= p 16)))))
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
          (choice (and file-names (ido-completing-read "Alternative: " file-names))))
     (if choice
         (let ((default-directory (or root default-directory)))
-          (find-file choice))
+          (if (= p 4)
+              (find-file-other-window choice)
+            (find-file choice)))
       (message "no alternative files"))))
 
 
 ;;;###autoload
-(defun alternative-files-create-file (&optional force)
-  "Find alternative files"
-  (interactive "P")
+(defun alternative-files-create-file (&optional p)
+  "Create non-existed alternative files
+C-u to open in other window, C-u C-u to reload alternative file list"
+  (interactive "p")
   (let* ((root (ignore-errors (funcall alternative-files-root-dir-function)))
-         (files (delete-if 'file-exists-p (alternative-files force)))
+         (files (delete-if 'file-exists-p (alternative-files (= p 16))))
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
@@ -270,7 +274,9 @@
         (let ((default-directory (or root default-directory)))
           (when (equal (file-name-directory choice) choice)
             (ignore-errors (make-directory choice)))
-          (find-file choice))
+          (if (= p 4)
+              (find-file choice)
+            (find-file-other-window choice)))
       (message "no alternative files to create"))))
 
 (provide 'alternative-files)
