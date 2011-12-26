@@ -220,7 +220,7 @@
 
 (defun alternative-files--apply-rule (file regexp &rest replacements)
   (when (string-match-p regexp file)
-    (mapcar (lambda (rep) (replace-regexp-in-string (concat "^.*\\(?:" regexp "\\).*$") rep file)) replacements)))
+    (mapcar (lambda (rep) (replace-regexp-in-string (concat "\\(?:" regexp "\\).*$") rep file)) replacements)))
 
 (defun alternative-files-user-rules-finder (&optional file)
   (let ((file (or file (alternative-files--detect-file-name)))

@@ -297,10 +297,15 @@
   '("bar")
   (alternative-files--apply-rule "test" "test" "bar"))
 
- (desc "should replace the whole string")
+ (desc "should replace to the end")
  (expect
   '("bar")
-  (alternative-files--apply-rule "test" "est" "bar"))
+  (alternative-files--apply-rule "test" "tes" "bar"))
+
+ (desc "should not replace prefix")
+ (expect
+  '("tbar")
+  (alternative-files--apply-rule "test" "es" "bar"))
 
  (desc "should replace all replacements")
  (expect
