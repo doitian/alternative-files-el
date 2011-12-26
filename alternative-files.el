@@ -38,12 +38,14 @@
 (defcustom alternative-files-functions
   '(alternative-files-rails-finder
     alternative-files-rspec-finder
-    alternative-files-objc-finder)
+    alternative-files-objc-finder
+    alternative-files-user-rules-finder)
   "functions used to find alternative-files"
   :type 'hook
   :options '(alternative-files-rails-finder
              alternative-files-rspec-finder
-             alternative-files-objc-finder)
+             alternative-files-objc-finder
+             alternative-files-user-rules-finder)
   :group 'alternative-files)
 
 (defcustom alternative-files-completing-read
