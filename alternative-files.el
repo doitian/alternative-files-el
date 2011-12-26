@@ -214,6 +214,7 @@
          (concat root dir name "Test.m")
          (concat root "Test/" name "Test.m")))))))
 
+;;;###autoload
 (defvar alternative-files-rules nil)
 (make-variable-buffer-local 'alternative-files-rules)
 (put 'alternative-files-rules 'safe-local-variable 'listp)
