@@ -283,3 +283,52 @@
         (alternative-files-functions '(finder)))
     (alternative-files t)))
  )
+
+(expectations
+ (desc "alternative-files--apply-rule")
+
+ (desc "should return nil if regexp does not match")
+ (expect
+  nil
+  (alternative-files--apply-rule "test" "foo" "bar"))
+
+ (desc "should return replacement")
+ (expect
+  '("bar")
+  (alternative-files--apply-rule "test" "test" "bar"))
+
+ (desc "should replace the whole string")
+ (expect
+  '("bar")
+  (alternative-files--apply-rule "test" "est" "bar"))
+
+ (desc "should replace all replacements")
+ (expect
+  '("foo" "bar")
+  (alternative-files--apply-rule "test" "test" "foo" "bar"))
+
+ (desc "should replace regexp")
+ (expect
+  '("foo" "bar")
+  (alternative-files--apply-rule "test" ".*" "foo" "bar"))
+
+ (desc "should support capture replacement")
+ (expect
+  '("spec/file" "test/file")
+  (alternative-files--apply-rule "dir/file" "dir/\\(.*\\)" "spec/\\1" "test/\\1")))
+
+(expectations
+ (desc "alternative-files-user-rules-finder")
+
+ (desc "should return nil if no user rules")
+ (expect
+  nil
+  (let ((alternative-files-rules nil))
+    (alternative-files-user-rules-finder "test")))
+
+ (desc "should return all from all rules")
+ (expect
+  '("foo" "bar")
+  (let ((alternative-files-rules '(("test" "foo")
+                                   (".*" "bar"))))
+    (alternative-files-user-rules-finder "test"))))

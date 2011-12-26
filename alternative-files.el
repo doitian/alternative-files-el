@@ -212,11 +212,29 @@
          (concat root dir name "Test.m")
          (concat root "Test/" name "Test.m")))))))
 
+(defvar alternative-files-rules nil)
+(make-variable-buffer-local 'alternative-files-rules)
+(put 'alternative-files-rules 'safe-local-variable 'listp)
+
+(defun alternative-files--apply-rule (file regexp &rest replacements)
+  (when (string-match-p regexp file)
+    (mapcar (lambda (rep) (replace-regexp-in-string (concat "^.*\\(?:" regexp "\\).*$") rep file)) replacements)))
+
+(defun alternative-files-user-rules-finder (&optional file)
+  (let ((file (or file (alternative-files--detect-file-name)))
+        (rules (or alternative-files-rules
+                   (and (fboundp 'eproject-attribute)
+                        (eproject-attribute :alternative-files-rules)))))
+    (apply
+     'append
+     (mapcar (lambda (rule) (apply 'alternative-files--apply-rule file rule)) rules))))
+
 (defvar alternative-files nil
   "cache for alternative files")
 (defvar alternative-files-executed nil
   "cache for alternative files execution flag")
 (make-variable-buffer-local 'alternative-files)
+(put 'alternative-files 'safe-local-variable 'listp)
 (put 'alternative-files 'permanent-local t)
 (make-variable-buffer-local 'alternative-files-executed)
 (put 'alternative-files-executed 'permanent-local t)
