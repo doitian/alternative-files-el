@@ -216,7 +216,9 @@
 
 ;;;###autoload
 (defvar alternative-files-rules nil)
+;;;###autoload
 (make-variable-buffer-local 'alternative-files-rules)
+;;;###autoload
 (put 'alternative-files-rules 'safe-local-variable 'listp)
 
 (defun alternative-files--apply-rule (file regexp &rest replacements)
