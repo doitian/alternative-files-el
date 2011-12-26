@@ -250,7 +250,9 @@ C-u to open in other window, C-u C-u to reload alternative file list"
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
-         (choice (and file-names (ido-completing-read "Alternative: " file-names))))
+         (choice (if (> (length file-names) 1)
+                     (ido-completing-read "Alternative: " file-names)
+                   (car file-names))))
     (if choice
         (let ((default-directory (or root default-directory)))
           (if (= p 4)
