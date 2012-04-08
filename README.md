@@ -15,6 +15,18 @@ Usage
         (global-set-key (kbd "M-s a") 'alternative-files-find-file)
         (global-set-key (kbd "M-s A") 'alternative-files-create-file)
 
+3.  User rules can be setup using directory local variables, for example,
+    create a file `.dir-locals.el`, and following rules:
+    
+    Every rule is a list. The first element (`car`) is a regular
+    expression. The rest elements (`cdr`) are replacements. If a file path
+    match the regular expression, all the replacements are used as alternative
+    files. In following example, `spec/hello_spec.coffee` has alternative file
+    `assets/test.coffee`.
+    
+        ((nil
+          (alternative-files-rules . (("spec/\\(.*\\)_spec.coffee" "assets/\\1.coffee")
+                                      ("assets/\\(.*\\).coffee" "spec/\\1_spec.coffee")))))
 
 Customization
 =============
