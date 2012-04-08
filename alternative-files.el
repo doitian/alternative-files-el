@@ -297,8 +297,9 @@ C-u to open in other window, C-u C-u to reload alternative file list"
          (choice (and file-names (ido-completing-read "Create: " file-names))))
     (if choice
         (let ((default-directory (or root default-directory)))
-          (when (equal (file-name-directory choice) choice)
-            (ignore-errors (make-directory choice t)))
+          (if (equal (file-name-directory choice) choice)
+              (make-directory choice t)
+            (make-directory (file-name-directory choice) t))
           (if (= p 4)
               (find-file choice)
             (find-file-other-window choice)))
