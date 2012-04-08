@@ -298,7 +298,7 @@ C-u to open in other window, C-u C-u to reload alternative file list"
     (if choice
         (let ((default-directory (or root default-directory)))
           (when (equal (file-name-directory choice) choice)
-            (ignore-errors (make-directory choice)))
+            (ignore-errors (make-directory choice t)))
           (if (= p 4)
               (find-file choice)
             (find-file-other-window choice)))
