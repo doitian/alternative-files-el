@@ -1,4 +1,4 @@
-;;; alternative-files.el -- Go to alternative file
+;;; alternative-files.el --- Go to alternative file
 
 ;; Copyright (C) 2011 Ian Yang
 
@@ -31,33 +31,34 @@
 
 ;; See README.md
 
-;;; Customizations
+;;; Code:
 
-(defgroup alternative-files nil "Find alternative files")
+;; Customization
+(defgroup alternative-files nil "Find alternative files"
+  :group 'files)
 
-(defcustom alternative-files-functions
+(defconst alternative-files-functions
   '(alternative-files-rails-finder
     alternative-files-rspec-finder
     alternative-files-objc-finder
     alternative-files-user-rules-finder)
-  "functions used to find alternative-files"
+  "Functions used to find alternative-files.")
+
+(defcustom alternative-files-user-functions nil
+  "User defined extra functions used to find alternative-files."
   :type 'hook
-  :options '(alternative-files-rails-finder
-             alternative-files-rspec-finder
-             alternative-files-objc-finder
-             alternative-files-user-rules-finder)
   :group 'alternative-files)
 
 (defcustom alternative-files-completing-read
   'ido-completing-read
-  "function used to read string with completion"
+  "Function used to read string with completion."
   :type 'function
   :options '(ido-completing-read completing-read)
   :group 'alternative-files)
 
 (defcustom alternative-files-root-dir-function
   'eproject-root
-  "function used to get root directory"
+  "Function used to get root directory."
   :type 'function
   :group 'alternative-files)
 (make-variable-buffer-local 'alternative-files-root-dir-function)
@@ -65,21 +66,24 @@
 
 ;;; Helper Functions:
 
-(eval-when-compile (require 'cl))
-
 (defun alternative-files--singularize-string (str)
-  "Use `singularize-string' in `inflections.el' or just remove trailing s."
+  "Singularize STR.
+
+Use `singularize-string' in `inflections.el' or just remove trailing s."
   (if (fboundp 'singularize-string)
       (singularize-string str)
     (substring str 0 (1- (length str)))))
 
 (defun alternative-files--pluralize-string (str)
-  "Use `pluralize-string' in `inflections.el' or just append trailing s."
+  "Pluralize STR.
+
+Use `pluralize-string' in `inflections.el' or just append trailing s."
   (if (fboundp 'pluralize-string)
       (pluralize-string str)
     (concat str "s")))
 
 (defun alternative-files--detect-file-name ()
+  "Detect real file name."
   (cond ((and (boundp 'org-src-mode) org-src-mode
               (boundp 'org-edit-src-beg-marker) org-edit-src-beg-marker)
          (buffer-file-name (marker-buffer org-edit-src-beg-marker)))
@@ -90,6 +94,7 @@
                                                            dired-directory)))))))
 
 (defun alternative-files--relative-name (filename &optional dir)
+  "Get relative file name of FILENAME in DIR."
   (let ((dir (or dir default-directory))
         (n (length dir)))
     (if (string-equal dir (substring filename 0 n))
@@ -99,6 +104,7 @@
 ;;; Code
 
 (defun alternative-files-rails-finder (&optional file)
+  "Find alternative files for FILE in Rails."
   (let ((file (or file (alternative-files--detect-file-name))))
     (cond
      ((string-match "^\\(.*\\)/app/\\(models\\|controllers\\|helpers\\)/\\(.+/\\)*\\([^/]+\\)\\.rb$" file)
@@ -147,6 +153,7 @@
      )))
 
 (defun alternative-files-rspec-finder (&optional file)
+  "Toggle between rspec and source code for FILE."
   (let ((file (or file (alternative-files--detect-file-name))))
     (cond
      ((string-match "^\\(.*\\)/app/\\(.+\\)\\.rb$" file)
@@ -172,7 +179,8 @@
       (let ((root (match-string 1 file))
             (name (match-string 2 file)))
         (list
-         (concat root "/lib/" name ".rb"))))
+         (concat root "/lib/" name ".rb")
+         (concat root "/app/" name ".rb"))))
 
      ((string-match "^\\(.*\\)/lib/\\(.+\\)\\.rb$" file)
       (let ((root (match-string 1 file))
@@ -184,6 +192,7 @@
      )))
 
 (defun alternative-files-objc-finder (&optional file)
+  "Find alternative files in Object-C project for FILE."
   (let* ((file (or file (alternative-files--detect-file-name))))
     (cond
      ((string-match "^\\(.*?/\\)\\([^/]+/\\)?\\([^/]+\\)Test\\.m$" file)
@@ -222,10 +231,12 @@
 (put 'alternative-files-rules 'safe-local-variable 'listp)
 
 (defun alternative-files--apply-rule (file regexp &rest replacements)
+  "Apply rule to FILE using REGEXP, return file names using each replacement string in REPLACEMENTS."
   (when (string-match-p regexp file)
     (mapcar (lambda (rep) (replace-regexp-in-string (concat "\\(?:" regexp "\\).*$") rep file)) replacements)))
 
 (defun alternative-files-user-rules-finder (&optional file)
+  "Find alternative files of FILE using user defined rules."
   (let ((file (or file (alternative-files--detect-file-name)))
         (rules (or alternative-files-rules
                    (and (fboundp 'eproject-attribute)
@@ -235,41 +246,55 @@
      (mapcar (lambda (rule) (apply 'alternative-files--apply-rule file rule)) rules))))
 
 (defvar alternative-files nil
-  "cache for alternative files")
-(defvar alternative-files-executed nil
-  "cache for alternative files execution flag")
+  "Cache for alternative files.")
+(defvar alternative-files-cached nil
+  "Cache for alternative files execution flag.")
 (make-variable-buffer-local 'alternative-files)
 (put 'alternative-files 'safe-local-variable 'listp)
 (put 'alternative-files 'permanent-local t)
-(make-variable-buffer-local 'alternative-files-executed)
-(put 'alternative-files-executed 'permanent-local t)
+(make-variable-buffer-local 'alternative-files-cached)
+(put 'alternative-files-cached 'permanent-local t)
 
 (defun alternative-files (&optional force)
-  "Find alternative files"
+  "Find alternative files.
+If FORCE is t, do not use the cache."
   (interactive "P")
-  (when (or force (not alternative-files-executed))
-    (setq alternative-files-executed t)
+  (when (or force (not alternative-files-cached))
+    (setq alternative-files-cached t)
     (setq alternative-files (delete-dups
                              (apply
                               'append
-                              (mapcar (lambda (f) (ignore-errors (funcall f))) alternative-files-functions)))))
+                              (mapcar (lambda (f) (ignore-errors (funcall f)))
+                                      (append alternative-files-functions
+                                              alternative-files-user-functions))))))
   alternative-files)
 
 ;;;###autoload
+(defun alternative-files-existing (&optional force)
+  "List of existing alternative files"
+  (apply
+   'append
+   (mapcar
+    (lambda (f)
+      (when (file-exists-p f)
+        (if (file-directory-p f)
+            (file-expand-wildcards (concat f "*") t)
+          (list f))))
+    (alternative-files force))))
+
+;;;###autoload
+(defun alternative-files-missing (&optional force)
+  "List of missing alternative files."
+  (delq nil (mapc (lambda (f) (when (file-exists-p f) f)) (alternative-files force))))
+
+;;;###autoload
 (defun alternative-files-find-file (&optional p)
-  "Find alternative files
-C-u to open in other window, C-u C-u to reload alternative file list"
+  "Find alternative files.
+
+With a \\[universal-argument] prefix argument P to open in other window, \\[universal-argument] \\[universal-argument] to reload alternative file list"
   (interactive "p")
   (let* ((root (ignore-errors (funcall alternative-files-root-dir-function)))
-         (files (apply
-                 'append
-                 (mapcar
-                  (lambda (f)
-                    (when (file-exists-p f)
-                      (if (file-directory-p f)
-                          (file-expand-wildcards (concat f "*") t)
-                        (list f))))
-                  (alternative-files (= p 16)))))
+         (files (alternative-files-existing (= p 16)))
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
@@ -286,11 +311,12 @@ C-u to open in other window, C-u C-u to reload alternative file list"
 
 ;;;###autoload
 (defun alternative-files-create-file (&optional p)
-  "Create non-existed alternative files
-C-u to open in other window, C-u C-u to reload alternative file list"
+  "Create non-existed alternative files.
+
+With a \\[universal-argument] prefix argument P to open in other window, \\[universal-argument] \\[universal-argument] to reload alternative file list."
   (interactive "p")
   (let* ((root (ignore-errors (funcall alternative-files-root-dir-function)))
-         (files (delete-if 'file-exists-p (alternative-files (= p 16))))
+         (files (alternative-files-missing (= p 16)))
          (file-names (if root
                          (mapcar (lambda (f) (alternative-files--relative-name f root)) files)
                        files))
@@ -306,3 +332,5 @@ C-u to open in other window, C-u C-u to reload alternative file list"
       (message "no alternative files to create"))))
 
 (provide 'alternative-files)
+
+;;; alternative-files.el ends here
